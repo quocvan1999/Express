@@ -5,6 +5,7 @@ import {
   getVideosTypeId,
   getVideoById,
 } from "../controllers/videoControllers.js";
+import { middlewareToken } from "../config/jwt.js";
 
 const videoRoutes = express.Router();
 

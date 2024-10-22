@@ -3,6 +3,7 @@ import sequelize from "../models/connect.js";
 import bcrypt from "bcrypt";
 import transporter from "../config/transporter.js";
 import { createToken } from "../config/jwt.js";
+import crypto from "crypto";
 
 const model = initModels(sequelize);
 
@@ -144,4 +145,49 @@ const loginFacebook = async (req, res) => {
   }
 };
 
-export { singUp, login, loginFacebook };
+const forgotPassword = async (req, res) => {
+  try {
+    let { email } = req.body;
+
+    let checkUser = await model.users.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (!checkUser) {
+      return res.status(400).json({ message: "Email is wrong" });
+    }
+
+    let randomCode = crypto.randomBytes(6).toString("hex");
+    let expire = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
+
+    await model.code.create({
+      code: randomCode,
+      expire,
+    });
+
+    const mailOption = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Code xác thực",
+      html: `
+        <h1>${randomCode}</h1>
+      `,
+    };
+
+    return transporter.sendMail(mailOption, (err, info) => {
+      if (err) {
+        return res.status(500).json({ message: "Send email fail" });
+      }
+
+      return res.status(200).json({
+        message: "Send forgot password successfully",
+      });
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "error API forgot password" });
+  }
+};
+
+export { singUp, login, loginFacebook, forgotPassword };

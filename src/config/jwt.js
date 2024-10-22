@@ -10,4 +10,29 @@ const createToken = (data) => {
   });
 };
 
-export { createToken };
+const verifyToken = (token) => {
+  try {
+    jwt.verify(token, process.env.SECRET_KEY);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+const middlewareToken = (req, res, next) => {
+  let { token } = req.headers;
+
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  let checkToken = verifyToken(token);
+
+  if (checkToken) {
+    next();
+  } else {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+};
+
+export { createToken, middlewareToken };

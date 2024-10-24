@@ -5,11 +5,12 @@ import {
   getVideosTypeId,
   getVideoById,
 } from "../controllers/videoControllers.js";
+import { middlewareToken } from "../config/jwt.js";
 
 const videoRoutes = express.Router();
 
 videoRoutes.get("/get-videos", getVideo);
-videoRoutes.get("/get-types", getTypes);
+videoRoutes.get("/get-types", middlewareToken, getTypes);
 videoRoutes.get("/get-videos/:typeId", getVideosTypeId);
 videoRoutes.get("/get-video/:videoId", getVideoById);
 
